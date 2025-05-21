@@ -1,0 +1,12 @@
+composer create-project laravel/laravel academy-web
+
+
+
+php artisan make:model User -m
+php artisan session:table
+php artisan migrate
+
+php artisan migrate:rollback
+php artisan migrate:fresh
+
+php artisan serve
