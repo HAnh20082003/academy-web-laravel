@@ -4,10 +4,10 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>@yield('title', 'AdminLTE v4')</title>
+    <title>{{ $title . ' - ' . config('constants.web_name') ?? '' }}</title>
     <!--begin::Primary Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="title" content=@yield('title', 'AdminLTE v4') />
+    <meta name="title" content={{ $title ?? '' }} />
     <meta name="author" content="ColorlibHQ" />
     <meta name="description"
         content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS." />
@@ -35,6 +35,17 @@
     <!-- jsvectormap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css"
         integrity="sha256-+uGLJmmTKOqBr+2E6KDYs/NRsHxSkONXFHUL0fy2O/4=" crossorigin="anonymous" />
+    <script>
+        if (window.location.hash && window.location.hash === '#_=_') {
+            if (history.replaceState) {
+                history.replaceState(null, null, window.location.href.split('#')[0]);
+            } else {
+                // Fallback cho trình duyệt cũ
+                window.location.hash = '';
+            }
+        }
+    </script>
+    @yield('scripts')
 </head>
 <!--end::Head-->
 <!--begin::Body-->
@@ -70,7 +81,7 @@
                                 @isset($parent_paths)
                                     @foreach ($parent_paths as $item)
                                         <li class="breadcrumb-item">
-                                            <a href="{{ $item['url'] ?? '#' }}">{{ $item['label'] }}</a>
+                                            <a href="{{ $item['url'] ?? '' }}">{{ $item['label'] }}</a>
                                         </li>
                                     @endforeach
                                 @endisset
@@ -99,6 +110,67 @@
     <!--end::App Wrapper-->
     <!--begin::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
+
+
+    <!-- Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+
+    @if (session('success'))
+        <script>
+            toastr.success("{{ session('success') }}");
+        </script>
+    @endif
+
+    @if ($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof toastr !== 'undefined') {
+                    let errorMsg = @json($errors->all());
+
+                    if (Array.isArray(errorMsg)) {
+                        errorMsg = errorMsg.filter(e => e).join('<br>'); // nối các lỗi bằng <br>
+                    } else if (typeof errorMsg !== 'string') {
+                        errorMsg = String(errorMsg);
+                    }
+
+                    if (errorMsg) {
+                        toastr.error(errorMsg, null, {
+                            timeOut: 5000,
+                            extendedTimeOut: 2000,
+                            closeButton: true,
+                            escapeHtml: false
+                        });
+                    }
+                } else {
+                    console.warn('toastr is not loaded.');
+                }
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            let errorMsg = {!! json_encode(session('error')) !!};
+            if (Array.isArray(errorMsg)) {
+                errorMsg = errorMsg.join('<br>'); // nối các lỗi bằng thẻ <br>
+            }
+            toastr.error(errorMsg, null, {
+                timeOut: 5000,
+                extendedTimeOut: 2000,
+                closeButton: true,
+                escapeHtml: false
+            });
+        </script>
+    @endif
+
     <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/browser/overlayscrollbars.browser.es6.min.js"
         integrity="sha256-dghWARbRe2eLlIJ56wNB+b760ywulqK3DzZYEpsg2fQ=" crossorigin="anonymous"></script>
     <!--end::Third Party Plugin(OverlayScrollbars)--><!--begin::Required Plugin(popperjs for Bootstrap 5)-->
@@ -328,7 +400,6 @@
             }
         });
     </script>
-
 
     <!--end::Script-->
 </body>

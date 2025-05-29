@@ -11,7 +11,6 @@
 
     <link rel="stylesheet" href="{{ asset('login-form-08/css/owl.carousel.min.css') }}">
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 
@@ -63,6 +62,33 @@
         </script>
     @endif
 
+    @if ($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof toastr !== 'undefined') {
+                    let errorMsg = @json($errors->all());
+
+                    if (Array.isArray(errorMsg)) {
+                        errorMsg = errorMsg.filter(e => e).join('<br>'); // nối các lỗi bằng <br>
+                    } else if (typeof errorMsg !== 'string') {
+                        errorMsg = String(errorMsg);
+                    }
+
+                    if (errorMsg) {
+                        toastr.error(errorMsg, null, {
+                            timeOut: 5000,
+                            extendedTimeOut: 2000,
+                            closeButton: true,
+                            escapeHtml: false
+                        });
+                    }
+                } else {
+                    console.warn('toastr is not loaded.');
+                }
+            });
+        </script>
+    @endif
+
     @if (session('error'))
         <script>
             let errorMsg = {!! json_encode(session('error')) !!};
@@ -79,12 +105,7 @@
     @endif
 
 
-    @if (session()->has('user_login'))
-        <script>
-            // Nếu người dùng đã login, nhưng quay về trang login bằng back, thì tự động chuyển trang
-            window.location.href = "{{ route('admin.users.index') }}";
-        </script>
-    @endif
+
 
 
 

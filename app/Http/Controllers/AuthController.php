@@ -5,23 +5,24 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
     //admin: nrtnhab 20082003
+    //$2y$12$Jy20hfZrvjZXmUpV.maAwef0O1A6bCJ9hktTEa4gPWCKum.kfn0cu
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'password' => 'required|min:6',
-        ]);
+        $validator = Validator::make($request->all(), User::passwordRules());
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->with('error', 'Minimum password length is 6')
                 ->withInput();
         }
         $username = $request->input('username');
@@ -30,24 +31,26 @@ class AuthController extends Controller
 
         // User::create([
         //     'username' => 'nrtnhab',
-        //     'email' => 'pkbinhchuannrtnhab@gmail.com',
+        //     'displayname' => 'Hoang Anh',
+        //     'email' => 'pkbinhchuannrtnhab@gmail.com', 
         //     'password' => Hash::make('20082003'),
+        //     'role' => 1,
         // ]);
 
         $remember = $request->has('remember');
-        $user = DB::table('users')->where('username', $username)->first();
+        $user = User::where('username', $username)
+            ->orWhere('email', $username)->first();
 
         if ($user) {
             if (Hash::check($password, $user->password)) {
-                session(['user_login' => $user->id]);
-                session(['redirect' => 'admin.users.index']);
-                $response = redirect()->route('admin.users.index')->with('success', 'Login successful!');
-                if ($remember) {
-                    $response->withCookie(cookie('user_login', $user->id, 60 * 24 * 7));
+
+                Auth::login($user, remember: $remember);
+                if ($user->role === User::ROLE_ADMIN) {
+                    $response = redirect()->route('admin.users.index');
                 } else {
-                    $response->withCookie(cookie()->forget('user_login'));
+                    $response = redirect()->route('admin.users.index');
                 }
-                return $response;
+                return $response->with('success', 'Login successful!');
             } else {
                 return redirect()->back()
                     ->with('error', 'Wrong password!')
@@ -101,15 +104,15 @@ class AuthController extends Controller
 
     public function verifyOtp(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = array_merge([
             'email' => 'required|email',
             'otp' => 'required',
-            'password' => 'required|min:6',
-        ]);
+        ], User::passwordRules());
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors($validator)->with('error', 'Minimum password length is 6')
+                ->withErrors($validator)
                 ->withInput();
         }
 
@@ -131,5 +134,58 @@ class AuthController extends Controller
         DB::table('password_resets')->where('email', $request->email)->delete();
 
         return redirect()->route('login')->with('success', 'Password has been reset.');
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+
+        // Kiểm tra xem user đã tồn tại chưa
+        $user = User::where('email', $googleUser->getEmail())->first();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User Account not found!');
+        }
+        Auth::login($user, remember: true);
+
+        if ($user->role === User::ROLE_ADMIN) {
+            $response = redirect()->route('admin.users.index');
+        } else {
+            $response = redirect()->route('admin.users.index');
+        }
+        $response = $response->with('success', 'Logged in with Google!');
+
+        return $response;
+    }
+
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')->redirect();
+    }
+
+    public function handleFacebookCallback()
+    {
+        $facebookUser = Socialite::driver('facebook')->stateless()->user();
+
+        $user = User::where('email', $facebookUser->getEmail())->first();
+        // Tìm hoặc tạo user
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User Account not found!');
+        }
+        Auth::login($user, remember: true);
+
+        if ($user->role === User::ROLE_ADMIN) {
+            $response = redirect()->route('admin.users.index');
+        } else {
+            $response = redirect()->route('admin.users.index');
+        }
+        $response = $response->with('success', 'Logged in with Google!');
+
+        return $response;
     }
 }

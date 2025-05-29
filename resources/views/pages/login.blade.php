@@ -3,7 +3,6 @@
 
 
 @section('content')
-
     <div class="container">
         <div class="row">
             <div class="col-md-6 order-md-2">
@@ -20,7 +19,7 @@
                         <form action="{{ route('login.submit') }}" method="post" onsubmit="return validateForm()">
                             @csrf <!-- Bắt buộc để tránh lỗi 419 -->
                             <div class="form-group first {{ old('username') ? 'field--not-empty' : '' }}">
-                                <label for="username">Username</label>
+                                <label for="username">Username or Email</label>
                                 <input type="text" value="{{ old('username') }}" class="form-control input-smaller"
                                     id="username" name="username">
                             </div>
@@ -45,10 +44,10 @@
                             <span class="d-block text-left my-4 text-muted"> or sign in with</span>
 
                             <div class="social-login">
-                                <a href="#" class="google">
+                                <a href="{{ route('google.login') }}" class="google">
                                     <span class="icon-google mr-3"></span>
                                 </a>
-                                <a href="#" class="facebook">
+                                <a href="{{ route('facebook.login') }}" class="facebook">
                                     <span class="icon-facebook mr-3"></span>
                                 </a>
                             </div>
@@ -88,9 +87,9 @@
             if (!isValid) {
                 toastr.clear();
                 if (!val_username && !val_password) {
-                    toastr.warning('Please enter your username and password.', 'Warning');
+                    toastr.warning('Please enter your username or email and password.', 'Warning');
                 } else if (!val_username) {
-                    toastr.warning('Please enter your username.', 'Warning');
+                    toastr.warning('Please enter your username or email.', 'Warning');
                     username.focus();
                 } else {
                     toastr.warning('Please enter your password.', 'Warning');

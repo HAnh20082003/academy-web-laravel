@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckLogin
@@ -15,16 +16,10 @@ class CheckLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (session()->has('user_login')) {
+        if (Auth::check()) {
             return $next($request);
         }
 
-        // Kiểm tra cookie remember me
-        if ($request->cookie('user_login')) {
-            // Lấy user_id từ cookie rồi gán lại session
-            session(['user_login' => $request->cookie('user_login')]);
-            return $next($request);
-        }
 
         // Nếu không có session, cookie thì redirect login
         return redirect()->route('login');

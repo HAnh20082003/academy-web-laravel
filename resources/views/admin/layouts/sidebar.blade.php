@@ -75,7 +75,7 @@
                 </li> --}}
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="#" class="nav-link {{ request()->routeIs('admin.dashboard.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer2"></i>
                         <p>
                             Dashboard
@@ -156,7 +156,7 @@
 
                 </li>
 
-                <li class="nav-item">
+                <li class="nav-item {{ request()->routeIs('admin.users.*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-person-badge-fill"></i>
                         <p>
@@ -165,6 +165,14 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.users.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>User Accounts</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="./layout/unfixed-sidebar.html" class="nav-link">
                                 <i class="nav-icon bi bi-circle"></i>
@@ -177,20 +185,7 @@
                                 <p>Students</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('admin.users.index') }}"
-                                class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
 
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>User Accounts</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="./layout/layout-custom-area.html" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Subjects</p>
-                            </a>
-                        </li>
                     </ul>
 
                 </li>
